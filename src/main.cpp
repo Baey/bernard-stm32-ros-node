@@ -10,8 +10,8 @@
 #include <imu_utils.h>
 #include <gui.hpp>
 #include <bipedal_types.hpp>
-#include <bipeda_wiring.hpp>
-#include <bipedal_micro_ros/foot_contact_node.hpp>
+#include <bipedal_wiring.hpp>
+#include <bipedal_micro_ros/stm32_node.hpp>
 
 Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28);
 HardwareTimer *imuTimer = new HardwareTimer(TIM2);
@@ -22,7 +22,7 @@ HardwareTimer *screenRefreshTimer = new HardwareTimer(TIM3);
 RobotStatus robotStatus;
 
 BipedalRobotGUI gui(&tft, screenRefreshTimer, &robotStatus);
-FootContactNode node;
+STM32Node node;
 
 void imuTimerInterrupt()
 {

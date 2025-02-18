@@ -57,6 +57,7 @@ void BipedalRobotGUI::drawScreen()
 /// @brief Draw the status screen, displaying IMU and ROS statuses.
 void BipedalRobotGUI::drawStatusScreen()
 {
+    previousRobotStatus = currentRobotStatus;
     tft->fillRect(30, 10, 100, 50, ST77XX_BLACK);
     tft->setCursor(10, 10);
     tft->print("IMU: ");
