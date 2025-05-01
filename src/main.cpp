@@ -7,95 +7,82 @@
 
 #include <micro_ros_platformio.h>
 
-#include <imu_utils.h>
 #include <gui.hpp>
-#include <bipedal_types.hpp>
-#include <bipedal_wiring.hpp>
-#include <bipedal_micro_ros/stm32_node.hpp>
+#include <bernard_system.hpp>
+#include <bernard_types.hpp>
+#include <bernard_wiring.hpp>
+#include <bernard_micro_ros/stm32_node.hpp>
 
-Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28);
+TwoWire *imu_i2c = new TwoWire(IMU_SDA, IMU_SCL);
 HardwareTimer *imuTimer = new HardwareTimer(TIM2);
+Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, imu_i2c);
 imu::Quaternion quat;
 
-Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-HardwareTimer *screenRefreshTimer = new HardwareTimer(TIM3);
-RobotStatus robotStatus;
+// Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+// HardwareTimer *screenRefreshTimer = new HardwareTimer(TIM3);
+BernardStatus bernardStatus;
 
-BipedalRobotGUI gui(&tft, screenRefreshTimer, &robotStatus);
-STM32Node node;
-
-void imuTimerInterrupt()
-{
-  sensors_event_t event;
-  bno.getEvent(&event);
-  quat = bno.getQuat();
-  // quatToSerial(quat);
-}
+// BernardGUI gui(&tft, screenRefreshTimer, &bernardStatus);
+BernardSensors sensors(&bno, L_FOOT_ANALOG_PRESSURE_SENSOR, L_FOOT_ANALOG_PRESSURE_SENSOR);
+STM32Node node(sensors);
 
 void setup(void)
 {
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
 
-  gui.setupGUI();
+  // gui.setupGUI();
 
   set_microros_serial_transports(Serial);
-  robotStatus.ROSStatus = WAITING_AGENT;
+  bernardStatus.ROSStatus = WAITING_AGENT;
 
   /* Initialise the sensor */
   if (!bno.begin())
   {
     /* There was a problem detecting the BNO055 ... check your connections */
-    robotStatus.IMUOnline = false;
+    bernardStatus.IMUOnline = false;
   }
   else
   {
-    robotStatus.IMUOnline = true;
+    bernardStatus.IMUOnline = true;
   }
 
   delay(1000);
 
   /* Use external crystal for better accuracy */
-  // bno.setExtCrystalUse(true);
-
-  /* Display some basic information on this sensor */
-  // imuDetailsToSerial(bno);
-
-  // imuTimer->setOverflow(100, HERTZ_FORMAT);
-  // imuTimer->attachInterrupt(imuTimerInterrupt);
-  // imuTimer->resume();
+  bno.setExtCrystalUse(true);
 }
 
 void loop(void)
 {
-  switch (robotStatus.ROSStatus)
+  switch (bernardStatus.ROSStatus)
   {
   case WAITING_AGENT:
-    EXECUTE_EVERY_N_MS(1000, robotStatus.ROSStatus = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_AVAILABLE : WAITING_AGENT;);
+    EXECUTE_EVERY_N_MS(1000, bernardStatus.ROSStatus = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_AVAILABLE : WAITING_AGENT;);
     break;
   case AGENT_AVAILABLE:
-    robotStatus.ROSStatus = (true == node.createEntities()) ? AGENT_CONNECTED : WAITING_AGENT;
-    if (robotStatus.ROSStatus == WAITING_AGENT)
+    bernardStatus.ROSStatus = (true == node.createEntities()) ? AGENT_CONNECTED : WAITING_AGENT;
+    if (bernardStatus.ROSStatus == WAITING_AGENT)
     {
       node.destroyEntities();
     };
     break;
   case AGENT_CONNECTED:
-    EXECUTE_EVERY_N_MS(200, robotStatus.ROSStatus = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
-    if (robotStatus.ROSStatus == AGENT_CONNECTED)
+    EXECUTE_EVERY_N_MS(200, bernardStatus.ROSStatus = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
+    if (bernardStatus.ROSStatus == AGENT_CONNECTED)
     {
       node.spin();
     }
     break;
   case AGENT_DISCONNECTED:
     node.destroyEntities();
-    robotStatus.ROSStatus = WAITING_AGENT;
+    bernardStatus.ROSStatus = WAITING_AGENT;
     break;
   default:
     break;
   }
 
-  if (robotStatus.ROSStatus == AGENT_CONNECTED)
+  if (bernardStatus.ROSStatus == AGENT_CONNECTED)
   {
     digitalWrite(LED_BUILTIN, 1);
   }

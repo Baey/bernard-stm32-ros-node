@@ -1,8 +1,8 @@
-#ifndef _BIPEDAL_TYPES_HPP
-#define _BIPEDAL_TYPES_HPP
+#ifndef _BERNARD_TYPES_HPP
+#define _BERNARD_TYPES_HPP
 
 /// @brief Status types reported by MicroROS.
-enum MicroROSStatus
+enum microROSStatus_t
 {
   WAITING_AGENT,
   AGENT_AVAILABLE,
@@ -11,10 +11,10 @@ enum MicroROSStatus
 };
 
 /// @brief Structure representing the robot status.
-struct RobotStatus
+struct BernardStatus
 {
   bool IMUOnline;
-  MicroROSStatus ROSStatus;
+  microROSStatus_t ROSStatus;
 };
 
-#endif // _BIPEDAL_TYPES_HPP
+#endif // _BERNARD_TYPES_HPP

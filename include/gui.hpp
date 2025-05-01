@@ -4,7 +4,9 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7735.h>
 #include <Adafruit_BNO055.h>
-#include <bipedal_types.hpp>
+#include <bernard_types.hpp>
+
+#include <bernard_wiring.hpp>
 
 /// @brief Available screen types.
 typedef enum
@@ -13,10 +15,10 @@ typedef enum
     IMU_DATA,
 } ScreenType;
 
-class BipedalRobotGUI
+class BernardGUI
 {
 public:
-    BipedalRobotGUI(Adafruit_ST7735 *tft, HardwareTimer *screenRefreshTimer, RobotStatus *robotStatus);
+    BernardGUI(Adafruit_ST7735 *tft, HardwareTimer *screenRefreshTimer, BernardStatus *robotStatus);
     
     void setupGUI();
     
@@ -33,8 +35,8 @@ private:
     
     Adafruit_ST7735 *tft;
     HardwareTimer *screenRefreshTimer;
-    RobotStatus *currentRobotStatus;
-    RobotStatus *previousRobotStatus;
+    BernardStatus *currentRobotStatus;
+    BernardStatus *previousRobotStatus;
 };
 
 #endif // _GUI_HPP

@@ -3,17 +3,16 @@
 #include <Adafruit_ST7735.h>
 #include <gui.hpp>
 
-/// Construct a new BipedalRobotGUI object.
-BipedalRobotGUI::BipedalRobotGUI(Adafruit_ST7735 *tft, HardwareTimer *screenRefreshTimer, RobotStatus *robotStatus)
+/// Construct a new BernardGUI object.
+BernardGUI::BernardGUI(Adafruit_ST7735 *tft, HardwareTimer *screenRefreshTimer, BernardStatus *robotStatus)
     : tft(tft), screenRefreshTimer(screenRefreshTimer), currentRobotStatus(robotStatus), previousRobotStatus() {}
 
 /// @brief Initialize the GUI and start the screen refresh timer.
-void BipedalRobotGUI::setupGUI()
+void BernardGUI::setupGUI()
 {
     currentScreen = STATUS;
     nextScreen = STATUS;
     previousRobotStatus = currentRobotStatus;
-    SPI.begin();
     tft->initR(INITR_BLACKTAB);
     tft->fillScreen(ST77XX_BLACK);
     tft->setRotation(1);
@@ -22,12 +21,12 @@ void BipedalRobotGUI::setupGUI()
     tft->setTextSize(1);
 
     screenRefreshTimer->setOverflow(1, HERTZ_FORMAT);
-    screenRefreshTimer->attachInterrupt(std::bind(&BipedalRobotGUI::drawScreen, this));
+    screenRefreshTimer->attachInterrupt(std::bind(&BernardGUI::drawScreen, this));
     screenRefreshTimer->resume();
 }
 
 /// @brief Reset the screen to its default state.
-void BipedalRobotGUI::resetScreen()
+void BernardGUI::resetScreen()
 {
     tft->fillScreen(ST77XX_BLACK);
     tft->setTextColor(ST77XX_WHITE);
@@ -35,7 +34,7 @@ void BipedalRobotGUI::resetScreen()
 }
 
 /// @brief Refresh the screen by checking if a screen change is requested.
-void BipedalRobotGUI::drawScreen()
+void BernardGUI::drawScreen()
 {
     if (currentScreen != nextScreen)
     {
@@ -55,7 +54,7 @@ void BipedalRobotGUI::drawScreen()
 }
 
 /// @brief Draw the status screen, displaying IMU and ROS statuses.
-void BipedalRobotGUI::drawStatusScreen()
+void BernardGUI::drawStatusScreen()
 {
     previousRobotStatus = currentRobotStatus;
     tft->fillRect(30, 10, 100, 50, ST77XX_BLACK);
