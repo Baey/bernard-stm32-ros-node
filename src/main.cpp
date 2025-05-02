@@ -18,39 +18,25 @@ HardwareTimer *imuTimer = new HardwareTimer(TIM2);
 Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, imu_i2c);
 imu::Quaternion quat;
 
-// Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-// HardwareTimer *screenRefreshTimer = new HardwareTimer(TIM3);
+Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+HardwareTimer *screenRefreshTimer = new HardwareTimer(TIM2);
 BernardStatus bernardStatus;
 
-// BernardGUI gui(&tft, screenRefreshTimer, &bernardStatus);
+BernardGUI gui(&tft, screenRefreshTimer, &bernardStatus);
 BernardSensors sensors(&bno, L_FOOT_ANALOG_PRESSURE_SENSOR, L_FOOT_ANALOG_PRESSURE_SENSOR);
 STM32Node node(sensors);
 
 void setup(void)
 {
   pinMode(LED_BUILTIN, OUTPUT);
-  Serial.begin(115200);
+  Serial.begin(921600);
 
-  // gui.setupGUI();
+  gui.setupGUI();
 
   set_microros_serial_transports(Serial);
   bernardStatus.ROSStatus = WAITING_AGENT;
 
-  /* Initialise the sensor */
-  if (!bno.begin())
-  {
-    /* There was a problem detecting the BNO055 ... check your connections */
-    bernardStatus.IMUOnline = false;
-  }
-  else
-  {
-    bernardStatus.IMUOnline = true;
-  }
-
-  delay(1000);
-
-  /* Use external crystal for better accuracy */
-  bno.setExtCrystalUse(true);
+  bernardStatus.IMUOnline = sensors.initSensors();
 }
 
 void loop(void)
@@ -68,7 +54,7 @@ void loop(void)
     };
     break;
   case AGENT_CONNECTED:
-    EXECUTE_EVERY_N_MS(200, bernardStatus.ROSStatus = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
+    EXECUTE_EVERY_N_MS(1000, bernardStatus.ROSStatus = (RMW_RET_OK == rmw_uros_ping_agent(50, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
     if (bernardStatus.ROSStatus == AGENT_CONNECTED)
     {
       node.spin();

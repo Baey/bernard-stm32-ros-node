@@ -43,6 +43,19 @@ private:
     rcl_publisher_t pubGyro;
     rcl_publisher_t pubAcc;
     rcl_publisher_t pubStatus;
+
+    // Status fields
+    rcl_ret_t retFootL;
+    rcl_ret_t retFootR;
+    rcl_ret_t retQuat;
+    rcl_ret_t retGyro;
+    rcl_ret_t retAcc;
+    rcl_ret_t retStatus;
+    rcl_ret_t retTimer;
+    rcl_ret_t retNode;
+    rcl_ret_t retExecutor;
+
+    // Message objects
     std_msgs__msg__UInt32 msgFootL;
     std_msgs__msg__UInt32 msgFootR;
     geometry_msgs__msg__Quaternion msgQuat;
