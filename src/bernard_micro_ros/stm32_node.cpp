@@ -131,18 +131,20 @@ void STM32Node::timerCallback(rcl_timer_t *timer, int64_t last_call_time)
     {
         STM32Node* node = STM32Node::instance;
 
-        std::vector<uint32_t> footPressure = node->sensors->readFootPressure();
+        std::vector<uint32_t> footPressure = node->sensors->getFootPressure();
+        imu::Quaternion quat = node->sensors->getQuaternion();
+        imu::Vector<3> linearAcc = node->sensors->getLinearAcceleration();
+        imu::Vector<3> angularAcc = node->sensors->getAccelerometer();
+        imu::Vector<3> gyro = node->sensors->getGyroscope();
+        
         node->msgFootL.data = footPressure[0];
         node->msgFootR.data = footPressure[1];
 
-        imu::Quaternion quat = node->sensors->readQuaternion();
         node->msgQuat.w = quat.w();
         node->msgQuat.x = quat.x();
         node->msgQuat.y = quat.y();
         node->msgQuat.z = quat.z();
 
-        imu::Vector<3> linearAcc = node->sensors->readLinearAcceleration();
-        imu::Vector<3> angularAcc = node->sensors->readAccelerometer();
         node->msgAcc.linear.x = linearAcc.x();
         node->msgAcc.linear.y = linearAcc.y();
         node->msgAcc.linear.z = linearAcc.z();
@@ -150,7 +152,6 @@ void STM32Node::timerCallback(rcl_timer_t *timer, int64_t last_call_time)
         node->msgAcc.angular.y = angularAcc.y();
         node->msgAcc.angular.z = angularAcc.z();
 
-        imu::Vector<3> gyro = node->sensors->readGyroscope();
         node->msgGyro.x = gyro.x();
         node->msgGyro.y = gyro.y();
         node->msgGyro.z = gyro.z();

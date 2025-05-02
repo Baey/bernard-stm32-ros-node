@@ -23,9 +23,9 @@ bool BernardSensors::initSensors()
       imuOnline = true;
     }
 
-    // sensorTimer->setOverflow(100, HERTZ_FORMAT);
-    // sensorTimer->attachInterrupt([this]() { this->timerCallback(); });
-    // sensorTimer->resume();
+    sensorTimer->setOverflow(100, HERTZ_FORMAT);
+    sensorTimer->attachInterrupt([this]() { this->timerCallback(); });
+    sensorTimer->resume();
 
     return imuOnline;
 }
