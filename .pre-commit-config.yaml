@@ -1,0 +1,46 @@
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v15.0.7
+    hooks:
+      - id: clang-format
+        args: ["--style=file"]  # Use .clang-format file in the project root
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+        args: ["--maxkb=2000"]  # Restrict files larger than 2 MB
+      - id: check-yaml
+      - id: check-merge-conflict
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        args: ["--skip", "*.hex,*.bin,*.elf"]  # Skip binary files
+
+  - repo: https://github.com/python/black
+    rev: 24.3.0
+    hooks:
+      - id: black
+        args: ["--line-length", "88"]
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.1
+    hooks:
+      - id: insert-license
+        files: \.(cpp|h|hpp)$
+        args:
+          # - --remove-header
+          - --license-filepath
+          - ./LICENSE_HEADER.txt
+          - --use-current-year
+          - --comment-style
+          - "//"

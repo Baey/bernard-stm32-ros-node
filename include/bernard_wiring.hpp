@@ -1,3 +1,8 @@
+// Copyright (c) 2025, Błażej Szargut.
+// All rights reserved.
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #ifndef _BERNARD_WIRING_HPP
 #define _BERNARD_WIRING_HPP
 

@@ -1,5 +1,10 @@
-#include <Adafruit_Sensor.h>
+// Copyright (c) 2025, Błażej Szargut.
+// All rights reserved.
+//
+// SPDX-License-Identifier: BSD-3-Clause
+
 #include <Adafruit_BNO055.h>
+#include <Adafruit_Sensor.h>
 #include <utility/imumaths.h>
 
 #include <Adafruit_GFX.h>
@@ -7,11 +12,11 @@
 
 #include <micro_ros_platformio.h>
 
-#include <gui.hpp>
+#include <bernard_micro_ros/stm32_node.hpp>
 #include <bernard_system.hpp>
 #include <bernard_types.hpp>
 #include <bernard_wiring.hpp>
-#include <bernard_micro_ros/stm32_node.hpp>
+#include <gui.hpp>
 
 TwoWire *imu_i2c = new TwoWire(IMU_SDA, IMU_SCL);
 HardwareTimer *imuTimer = new HardwareTimer(TIM2);
@@ -23,11 +28,11 @@ HardwareTimer *screenRefreshTimer = new HardwareTimer(TIM2);
 BernardStatus bernardStatus;
 
 BernardGUI gui(&tft, screenRefreshTimer, &bernardStatus);
-BernardSensors sensors(&bno, L_FOOT_ANALOG_PRESSURE_SENSOR, L_FOOT_ANALOG_PRESSURE_SENSOR);
+BernardSensors sensors(&bno, L_FOOT_ANALOG_PRESSURE_SENSOR,
+                       L_FOOT_ANALOG_PRESSURE_SENSOR);
 STM32Node node(sensors);
 
-void setup(void)
-{
+void setup(void) {
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(921600);
 
@@ -39,24 +44,27 @@ void setup(void)
   bernardStatus.IMUOnline = sensors.initSensors();
 }
 
-void loop(void)
-{
-  switch (bernardStatus.ROSStatus)
-  {
+void loop(void) {
+  switch (bernardStatus.ROSStatus) {
   case WAITING_AGENT:
-    EXECUTE_EVERY_N_MS(1000, bernardStatus.ROSStatus = (RMW_RET_OK == rmw_uros_ping_agent(100, 1)) ? AGENT_AVAILABLE : WAITING_AGENT;);
+    EXECUTE_EVERY_N_MS(1000, bernardStatus.ROSStatus =
+                                 (RMW_RET_OK == rmw_uros_ping_agent(100, 1))
+                                     ? AGENT_AVAILABLE
+                                     : WAITING_AGENT;);
     break;
   case AGENT_AVAILABLE:
-    bernardStatus.ROSStatus = (true == node.createEntities()) ? AGENT_CONNECTED : WAITING_AGENT;
-    if (bernardStatus.ROSStatus == WAITING_AGENT)
-    {
+    bernardStatus.ROSStatus =
+        (true == node.createEntities()) ? AGENT_CONNECTED : WAITING_AGENT;
+    if (bernardStatus.ROSStatus == WAITING_AGENT) {
       node.destroyEntities();
     };
     break;
   case AGENT_CONNECTED:
-    EXECUTE_EVERY_N_MS(1000, bernardStatus.ROSStatus = (RMW_RET_OK == rmw_uros_ping_agent(50, 1)) ? AGENT_CONNECTED : AGENT_DISCONNECTED;);
-    if (bernardStatus.ROSStatus == AGENT_CONNECTED)
-    {
+    EXECUTE_EVERY_N_MS(1000, bernardStatus.ROSStatus =
+                                 (RMW_RET_OK == rmw_uros_ping_agent(50, 1))
+                                     ? AGENT_CONNECTED
+                                     : AGENT_DISCONNECTED;);
+    if (bernardStatus.ROSStatus == AGENT_CONNECTED) {
       node.spin();
     }
     break;
@@ -68,12 +76,9 @@ void loop(void)
     break;
   }
 
-  if (bernardStatus.ROSStatus == AGENT_CONNECTED)
-  {
+  if (bernardStatus.ROSStatus == AGENT_CONNECTED) {
     digitalWrite(LED_BUILTIN, 1);
-  }
-  else
-  {
+  } else {
     digitalWrite(LED_BUILTIN, 0);
   }
 }
