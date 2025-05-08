@@ -4,7 +4,7 @@
 
 This repository contains the **PlatformIO project** for the micro-ROS node, which handles communication, sensor data reading. It is a submodule of the main [bernard-bipedal-robot](https://github.com/Baey/bernard-bipedal-robot) repository.
 
-The other submodule, [bernard-rl](https://github.com/Baey/BERNARD-RL), provides an IsaacLab extension with an RL environment for training the robot in simulation.
+The other submodule, [bernard-rl](https://github.com/Baey/bernard-rl), provides an IsaacLab extension with an RL environment for training the robot in simulation.
 
 ---
 
@@ -140,7 +140,7 @@ platformio test
 ## Related Repositories
 
 - [bernard-bipedal-robot](https://github.com/Baey/bernard-bipedal-robot): Main repository for the project.
-- [bernard-rl](https://github.com/Baey/BERNARD-RL): IsaacLab extension for RL environment.
+- [bernard-rl](https://github.com/Baey/bernard-rl): IsaacLab extension for RL environment.
 
 ---
 
