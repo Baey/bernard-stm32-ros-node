@@ -17,6 +17,7 @@
 
 /// @brief Pin definitions for the feet pressure sensors.
 #define L_FOOT_ANALOG_PRESSURE_SENSOR PC0
+#define R_FOOT_ANALOG_PRESSURE_SENSOR PC1
 
 /// @brief Pin definitions for the IMU.
 #define IMU_SDA PB9

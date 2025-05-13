@@ -9,19 +9,26 @@
 #include <Adafruit_BNO055.h>
 #include <Adafruit_Sensor.h>
 
+#include <bernard_types.hpp>
+#include <gui.hpp>
+
 /// @brief Class with BERNARD sensors.
 /// @details This class so far contains the IMU sensor and the foot contact
 /// sensors.
 class BernardSensors {
 public:
-  BernardSensors(Adafruit_BNO055 *imu, uint32_t lFootContactPin,
+  BernardSensors(Adafruit_BNO055 *imu, BernardStatus_t *status, BernardGUI *gui, uint32_t lFootContactPin,
                  uint32_t rFootContactPin);
 
   ~BernardSensors() {}
 
   /// @brief Initializes the Bernard sensors.
   /// @return true if the IMU sensor is online.
-  bool initSensors();
+  IMUStatus_t initSensors();
+
+  /// @brief Sets the IMU sensor.
+  /// @details This function is used to set the IMU sensor.
+  IMUStatus_t initIMU();
 
   /// @brief Reads the IMU quaternion.
   imu::Quaternion readQuaternion();
@@ -75,15 +82,21 @@ public:
     return {footContactLValue, footContactRValue};
   }
 
-  /// @brief Timer callback function.
+  /// @brief Timer callback function to read the IMU data and the foot contact sensors.
   /// @details This function is called every 100ms to read the IMU data and the
   /// foot contact sensors.
-  void timerCallback();
+  void readSensorTimerCallback();
+
+  /// @brief Timer callback function to ping the IMU sensor.
+  void imuStatusTimerCallback();
 
 private:
   Adafruit_BNO055 *imu;
+  BernardGUI *gui;
   sensors_event_t imuEvent;
-  HardwareTimer *sensorTimer;
+  BernardStatus_t *status;
+  uint8_t imuSystemStatus, imuSelfTestResult, imuSystemError;
+  HardwareTimer *sensorTimer, *pingImuTimer;
   uint32_t lFootContactPin;
   uint32_t rFootContactPin;
   imu::Quaternion quat;

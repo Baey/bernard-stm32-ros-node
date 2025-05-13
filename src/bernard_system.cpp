@@ -11,17 +11,16 @@ BernardSystem::BernardSystem() : sensors(), gui(), status(), node() {
   TwoWire *imu_i2c = new TwoWire(IMU_SDA, IMU_SCL);
   imu_i2c->begin();
   Adafruit_BNO055 *bno = new Adafruit_BNO055(55, 0x28, imu_i2c);
-
+  status = new BernardStatus_t();
   // Create the BernardSensors object
-  sensors = new BernardSensors(bno, L_FOOT_ANALOG_PRESSURE_SENSOR,
-                               L_FOOT_ANALOG_PRESSURE_SENSOR);
+  sensors = new BernardSensors(bno, status, gui, L_FOOT_ANALOG_PRESSURE_SENSOR,
+                               R_FOOT_ANALOG_PRESSURE_SENSOR);
 
   // Initialize TFT display
   Adafruit_ST7735 *tft =
       new Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
   HardwareTimer *screenRefreshTimer = new HardwareTimer(TIM3);
 
-  status = new BernardStatus();
 
   // Create the BernardGUI object
   gui = new BernardGUI(tft, screenRefreshTimer, status);
@@ -37,13 +36,13 @@ void BernardSystem::init() {
 
   Serial.println("Initializing GUI...");
   // Initialize the GUI
-  gui->setupGUI();
+  gui->initGUI();
 
   Serial.println("Initializing IMU...");
   // Initialize the IMU
   // status->IMUOnline = sensors->initIMU();
 
-  if (status->IMUOnline) {
+  if (status->IMUStatus == IMU_ONLINE) {
     Serial.println("IMU is online.");
   } else {
     Serial.println("IMU is offline.");

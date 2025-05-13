@@ -19,29 +19,36 @@
 #include <gui.hpp>
 
 TwoWire *imu_i2c = new TwoWire(IMU_SDA, IMU_SCL);
-HardwareTimer *imuTimer = new HardwareTimer(TIM2);
+// HardwareTimer *imuTimer = new HardwareTimer(TIM2);
 Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, imu_i2c);
 imu::Quaternion quat;
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 HardwareTimer *screenRefreshTimer = new HardwareTimer(TIM2);
-BernardStatus bernardStatus;
+BernardStatus_t bernardStatus;
 
 BernardGUI gui(&tft, screenRefreshTimer, &bernardStatus);
-BernardSensors sensors(&bno, L_FOOT_ANALOG_PRESSURE_SENSOR,
-                       L_FOOT_ANALOG_PRESSURE_SENSOR);
+BernardSensors sensors(&bno, &bernardStatus, &gui, L_FOOT_ANALOG_PRESSURE_SENSOR,
+                       R_FOOT_ANALOG_PRESSURE_SENSOR);
 STM32Node node(sensors);
 
 void setup(void) {
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(921600);
 
-  gui.setupGUI();
+  gui.initGUI();
+  delay(1000);
 
+  gui.logMessage("ROS initialization...");
+  delay(1000);
   set_microros_serial_transports(Serial);
   bernardStatus.ROSStatus = WAITING_AGENT;
 
-  bernardStatus.IMUOnline = sensors.initSensors();
+  bernardStatus.IMUStatus = sensors.initSensors();
+  gui.logMessage("Sensors initialized!");
+  delay(1000);
+  gui.logMessage("Waiting for Kria...");
+  delay(1000);
 }
 
 void loop(void) {
@@ -57,7 +64,9 @@ void loop(void) {
         (true == node.createEntities()) ? AGENT_CONNECTED : WAITING_AGENT;
     if (bernardStatus.ROSStatus == WAITING_AGENT) {
       node.destroyEntities();
-    };
+    } else {
+      gui.setNextScreen(GUI_STATUS);
+    }
     break;
   case AGENT_CONNECTED:
     EXECUTE_EVERY_N_MS(1000, bernardStatus.ROSStatus =

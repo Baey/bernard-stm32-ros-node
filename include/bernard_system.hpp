@@ -23,7 +23,7 @@ public:
   void init();
 
   /// @brief Returns the BERNARD status.
-  BernardStatus getStatus() { return *status; }
+  BernardStatus_t getStatus() { return *status; }
 
   /// @brief Returns the BERNARD sensors.
   BernardSensors *getSensors() { return sensors; }
@@ -42,12 +42,12 @@ public:
 
   /// @brief Sets the BERNARD IMU status.
   /// @param status The new IMU status.
-  void setIMUStatus(bool status) { this->status->IMUOnline = status; }
+  void setIMUStatus(IMUSystemStatus_t status) { this->status->IMUSystemStatus = status; }
 
 private:
   BernardSensors *sensors; ///< Pointer to the BERNARD sensors.
   BernardGUI *gui;         ///< Pointer to the BERNARD GUI.
-  BernardStatus *status;   ///< Pointer to the BERNARD status.
+  BernardStatus_t *status;   ///< Pointer to the BERNARD status.
   STM32Node *node;         ///< Pointer to the STM32 micro-ROS node.
 };
 
