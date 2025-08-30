@@ -55,9 +55,9 @@ public:
   /// microcontroller.
   /// @details The foot contact sensors are used to detect if the robot is in
   /// contact with the ground.
-  /// @return A vector of uint32_t containing the analog values from the left
+  /// @return A vector of uint16_t containing the analog values from the left
   /// and right foot contact sensors.
-  std::vector<uint32_t> readFootPressure();
+  std::vector<uint16_t> readFootPressure();
 
   /// @brief Gets the IMU quaternion.
   /// @return The IMU quaternion.
@@ -76,9 +76,9 @@ public:
   imu::Vector<3> getGyroscope() { return gyro; }
 
   /// @brief Gets the foot contact sensors values.
-  /// @return A vector of uint32_t containing the analog values from the left
+  /// @return A vector of uint16_t containing the analog values from the left
   /// and right foot contact sensors.
-  std::vector<uint32_t> getFootPressure() {
+  std::vector<uint16_t> getFootPressure() {
     return {footContactLValue, footContactRValue};
   }
 
@@ -103,8 +103,8 @@ private:
   imu::Vector<3> linearAcc;
   imu::Vector<3> angularAcc;
   imu::Vector<3> gyro;
-  uint32_t footContactLValue;
-  uint32_t footContactRValue;
+  uint16_t footContactLValue;
+  uint16_t footContactRValue;
 };
 
 #endif // _BERNARD_SENSORS_HPP

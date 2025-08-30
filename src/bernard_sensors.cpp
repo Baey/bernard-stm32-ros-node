@@ -61,8 +61,8 @@ imu::Vector<3> BernardSensors::readGyroscope() {
   return imu->getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
 }
 
-std::vector<uint32_t> BernardSensors::readFootPressure() {
-  return {analogRead(lFootContactPin), analogRead(rFootContactPin)};
+std::vector<uint16_t> BernardSensors::readFootPressure() {
+  return {static_cast<uint16_t>(analogRead(lFootContactPin)), static_cast<uint16_t>(analogRead(rFootContactPin))};
 }
 
 void BernardSensors::readSensorTimerCallback() {
@@ -71,7 +71,7 @@ void BernardSensors::readSensorTimerCallback() {
   angularAcc = readAccelerometer();
   gyro = readGyroscope();
 
-  std::vector<uint32_t> footContact = readFootPressure();
+  std::vector<uint16_t> footContact = readFootPressure();
   footContactLValue = 0.9 * footContactLValue + 0.1 * footContact[0];
   footContactRValue = 0.9 * footContactRValue + 0.1 * footContact[1];
 }

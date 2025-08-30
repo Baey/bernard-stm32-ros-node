@@ -10,10 +10,11 @@
 STM32Node *STM32Node::instance = nullptr;
 
 STM32Node::STM32Node(BernardSensors &sensors)
-    : support(), node(), timer(), executor(), allocator(), pubFootL(),
-      pubFootR(), pubQuat(), pubGyro(), pubAcc(), pubStatus(), msgFootL(),
-      msgFootR(), msgQuat(), msgGyro(), msgAcc(), msgStatus(),
-      sensors(&sensors) {}
+    : support(), node(), timer(), executor(), allocator(), 
+      pubFeetPressure(), pubImu(), pubStatus(), msgFeetPressure(),
+      msgImu(), msgStatus(), sensors(&sensors) {
+        msgFeetPressure.data.size = 2;
+      }
 
 /// @brief Destructor that destroys all created ROS entities.
 STM32Node::~STM32Node() { destroyEntities(); }
@@ -28,27 +29,15 @@ bool STM32Node::createEntities() {
   RCCHECK(rclc_node_init_default(&this->node, "stm32_publisher_rclc", "",
                                  &this->support));
 
-  // Foot contact publishers
+  // Foot contact publisher
   RCCHECK(rclc_publisher_init_best_effort(
-      &pubFootL, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, UInt32),
-      "foot_contact_l"));
+      &pubFeetPressure, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, UInt16MultiArray),
+      "feet_pressure"));
 
+  // IMU publisher
   RCCHECK(rclc_publisher_init_best_effort(
-      &pubFootR, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, UInt32),
-      "foot_contact_r"));
-
-  // IMU publishers
-  RCCHECK(rclc_publisher_init_best_effort(
-      &pubQuat, &node,
-      ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Quaternion), "quat"));
-
-  RCCHECK(rclc_publisher_init_best_effort(
-      &pubGyro, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Vector3),
-      "gyro"));
-
-  RCCHECK(rclc_publisher_init_best_effort(
-      &pubAcc, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Accel),
-      "acc"));
+      &pubImu, &node,
+      ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu), "imu"));
 
   // Status publisher
   RCCHECK(rclc_publisher_init_best_effort(
@@ -75,11 +64,8 @@ bool STM32Node::createEntities() {
 void STM32Node::destroyEntities() {
   rmw_context_t *rmw_context = rcl_context_get_rmw_context(&support.context);
   (void)rmw_uros_set_context_entity_destroy_session_timeout(rmw_context, 0);
-  STM32Node::instance->retFootL = rcl_publisher_fini(&pubFootL, &node);
-  STM32Node::instance->retFootR = rcl_publisher_fini(&pubFootR, &node);
-  STM32Node::instance->retQuat = rcl_publisher_fini(&pubQuat, &node);
-  STM32Node::instance->retGyro = rcl_publisher_fini(&pubGyro, &node);
-  STM32Node::instance->retAcc = rcl_publisher_fini(&pubAcc, &node);
+  STM32Node::instance->retFeetPressure = rcl_publisher_fini(&pubFeetPressure, &node);
+  STM32Node::instance->retImu = rcl_publisher_fini(&pubImu, &node);
   STM32Node::instance->retStatus = rcl_publisher_fini(&pubStatus, &node);
   STM32Node::instance->retTimer = rcl_timer_fini(&timer);
   STM32Node::instance->retExecutor = rclc_executor_fini(&executor);
@@ -98,43 +84,32 @@ void STM32Node::timerCallback(rcl_timer_t *timer, int64_t last_call_time) {
   if (STM32Node::instance != nullptr) {
     STM32Node *node = STM32Node::instance;
 
-    std::vector<uint32_t> footPressure = node->sensors->getFootPressure();
+    std::vector<uint16_t> footPressure = node->sensors->getFootPressure();
     imu::Quaternion quat = node->sensors->getQuaternion();
     imu::Vector<3> linearAcc = node->sensors->getLinearAcceleration();
     imu::Vector<3> angularAcc = node->sensors->getAccelerometer();
     imu::Vector<3> gyro = node->sensors->getGyroscope();
 
-    node->msgFootL.data = footPressure[0];
-    node->msgFootR.data = footPressure[1];
-
-    node->msgQuat.w = quat.w();
-    node->msgQuat.x = quat.x();
-    node->msgQuat.y = quat.y();
-    node->msgQuat.z = quat.z();
-
-    node->msgAcc.linear.x = linearAcc.x();
-    node->msgAcc.linear.y = linearAcc.y();
-    node->msgAcc.linear.z = linearAcc.z();
-    node->msgAcc.angular.x = angularAcc.x();
-    node->msgAcc.angular.y = angularAcc.y();
-    node->msgAcc.angular.z = angularAcc.z();
-
-    node->msgGyro.x = gyro.x();
-    node->msgGyro.y = gyro.y();
-    node->msgGyro.z = gyro.z();
+    node->msgFeetPressure.data.data = &footPressure[0];
+    
+    node->msgImu.header.stamp.sec = millis() / 1000;
+    node->msgImu.orientation.x = quat.x();
+    node->msgImu.orientation.y = quat.y();
+    node->msgImu.orientation.z = quat.z();
+    node->msgImu.orientation.w = quat.w();
+    node->msgImu.linear_acceleration.x = linearAcc.x();
+    node->msgImu.linear_acceleration.y = linearAcc.y();
+    node->msgImu.linear_acceleration.z = linearAcc.z();
+    node->msgImu.angular_velocity.x = gyro.x();
+    node->msgImu.angular_velocity.y = gyro.y();
+    node->msgImu.angular_velocity.z = gyro.z();
 
     node->msgStatus.data = 1;
 
-    node->retFootL = rcl_publish(&STM32Node::instance->pubFootL,
-                                 &STM32Node::instance->msgFootL, NULL);
-    node->retFootR = rcl_publish(&STM32Node::instance->pubFootR,
-                                 &STM32Node::instance->msgFootR, NULL);
-    node->retQuat = rcl_publish(&STM32Node::instance->pubQuat,
-                                &STM32Node::instance->msgQuat, NULL);
-    node->retGyro = rcl_publish(&STM32Node::instance->pubGyro,
-                                &STM32Node::instance->msgGyro, NULL);
-    node->retAcc = rcl_publish(&STM32Node::instance->pubAcc,
-                               &STM32Node::instance->msgAcc, NULL);
+    node->retFeetPressure = rcl_publish(&STM32Node::instance->pubFeetPressure,
+                                 &STM32Node::instance->msgFeetPressure, NULL);
+    node->retImu = rcl_publish(&STM32Node::instance->pubImu,
+                                &STM32Node::instance->msgImu, NULL);
     node->retStatus = rcl_publish(&STM32Node::instance->pubStatus,
                                   &STM32Node::instance->msgStatus, NULL);
   }
