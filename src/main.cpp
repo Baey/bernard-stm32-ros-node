@@ -21,7 +21,7 @@
 TwoWire *imu_i2c = new TwoWire(IMU_SDA, IMU_SCL);
 // HardwareTimer *imuTimer = new HardwareTimer(TIM2);
 Adafruit_BNO055 bno = Adafruit_BNO055(55, 0x28, imu_i2c);
-imu::Quaternion quat;
+// imu::Quaternion quat;
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 HardwareTimer *screenRefreshTimer = new HardwareTimer(TIM2);
@@ -32,7 +32,8 @@ BernardSensors sensors(&bno, &bernardStatus, &gui, L_FOOT_ANALOG_PRESSURE_SENSOR
                        R_FOOT_ANALOG_PRESSURE_SENSOR);
 STM32Node node(sensors);
 
-void setup(void) {
+void setup(void)
+{
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(921600);
 
@@ -51,8 +52,10 @@ void setup(void) {
   delay(1000);
 }
 
-void loop(void) {
-  switch (bernardStatus.ROSStatus) {
+void loop(void)
+{
+  switch (bernardStatus.ROSStatus)
+  {
   case WAITING_AGENT:
     EXECUTE_EVERY_N_MS(1000, bernardStatus.ROSStatus =
                                  (RMW_RET_OK == rmw_uros_ping_agent(100, 1))
@@ -62,9 +65,12 @@ void loop(void) {
   case AGENT_AVAILABLE:
     bernardStatus.ROSStatus =
         (true == node.createEntities()) ? AGENT_CONNECTED : WAITING_AGENT;
-    if (bernardStatus.ROSStatus == WAITING_AGENT) {
+    if (bernardStatus.ROSStatus == WAITING_AGENT)
+    {
       node.destroyEntities();
-    } else {
+    }
+    else
+    {
       gui.setNextScreen(GUI_STATUS);
     }
     break;
@@ -73,7 +79,8 @@ void loop(void) {
                                  (RMW_RET_OK == rmw_uros_ping_agent(50, 1))
                                      ? AGENT_CONNECTED
                                      : AGENT_DISCONNECTED;);
-    if (bernardStatus.ROSStatus == AGENT_CONNECTED) {
+    if (bernardStatus.ROSStatus == AGENT_CONNECTED)
+    {
       node.spin();
     }
     break;
@@ -85,9 +92,12 @@ void loop(void) {
     break;
   }
 
-  if (bernardStatus.ROSStatus == AGENT_CONNECTED) {
+  if (bernardStatus.ROSStatus == AGENT_CONNECTED)
+  {
     digitalWrite(LED_BUILTIN, 1);
-  } else {
+  }
+  else
+  {
     digitalWrite(LED_BUILTIN, 0);
   }
 }

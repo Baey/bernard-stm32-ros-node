@@ -15,7 +15,8 @@
 /// @brief Class with BERNARD sensors.
 /// @details This class so far contains the IMU sensor and the foot contact
 /// sensors.
-class BernardSensors {
+class BernardSensors
+{
 public:
   BernardSensors(Adafruit_BNO055 *imu, BernardStatus_t *status, BernardGUI *gui, uint32_t lFootContactPin,
                  uint32_t rFootContactPin);
@@ -48,6 +49,10 @@ public:
   /// the x, y and z axes.
   imu::Vector<3> readGyroscope();
 
+  /// @brief Reads the IMU temperature data in °C.
+  /// @return The IMU temperature data.
+  int8_t readTemperature();
+
   /// @brief Reads analog values from the foot contact sensors.
   /// @details The foot contact sensors are analog sensors that return a value
   /// between 0 and 1023.
@@ -55,9 +60,9 @@ public:
   /// microcontroller.
   /// @details The foot contact sensors are used to detect if the robot is in
   /// contact with the ground.
-  /// @return A vector of uint16_t containing the analog values from the left
+  /// @return An array of uint16_t containing the analog values from the left
   /// and right foot contact sensors.
-  std::vector<uint16_t> readFootPressure();
+  std::array<uint16_t, 2> readFootPressure();
 
   /// @brief Gets the IMU quaternion.
   /// @return The IMU quaternion.
@@ -75,17 +80,25 @@ public:
   /// @return The IMU gyroscope data.
   imu::Vector<3> getGyroscope() { return gyro; }
 
+  /// @brief Gets the IMU temperature data.
+  /// @return The IMU temperature data.
+  int8_t getTemperature() { return temp; }
+
   /// @brief Gets the foot contact sensors values.
   /// @return A vector of uint16_t containing the analog values from the left
   /// and right foot contact sensors.
-  std::vector<uint16_t> getFootPressure() {
+  std::array<uint16_t, 2> getFootPressure()
+  {
     return {footContactLValue, footContactRValue};
   }
 
   /// @brief Timer callback function to read the IMU data and the foot contact sensors.
   /// @details This function is called every 100ms to read the IMU data and the
   /// foot contact sensors.
-  void readSensorTimerCallback();
+  void readHighFrequencyTimerCallback();
+
+  /// @brief Timer callback function to read the IMU temperature.
+  void readLowFrequencyTimerCallback();
 
   /// @brief Timer callback function to ping the IMU sensor.
   void imuStatusTimerCallback();
@@ -96,13 +109,14 @@ private:
   sensors_event_t imuEvent;
   BernardStatus_t *status;
   uint8_t imuSystemStatus, imuSelfTestResult, imuSystemError;
-  HardwareTimer *sensorTimer, *pingImuTimer;
+  HardwareTimer *highFreqTimer, *lowFreqTimer, *pingImuTimer;
   uint32_t lFootContactPin;
   uint32_t rFootContactPin;
   imu::Quaternion quat;
   imu::Vector<3> linearAcc;
   imu::Vector<3> angularAcc;
   imu::Vector<3> gyro;
+  int8_t temp;
   uint16_t footContactLValue;
   uint16_t footContactRValue;
 };

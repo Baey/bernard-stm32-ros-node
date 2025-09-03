@@ -14,13 +14,14 @@
 #include <rcl/rcl.h>
 #include <rclc/executor.h>
 #include <rclc/rclc.h>
+#include <rosidl_runtime_c/primitives_sequence_functions.h>
 #include <rmw_microros/rmw_microros.h>
 #include <std_msgs/msg/u_int16_multi_array.h>
 #include <std_msgs/msg/u_int8.h>
+#include <std_msgs/msg/int8.h>
 
-constexpr uint8_t FEET_PRESSURE_ARRAY_BITS_NUM = sizeof(uint16_t) * 2;
-
-class STM32Node {
+class STM32Node
+{
 public:
   STM32Node(BernardSensors &sensors);
 
@@ -38,27 +39,30 @@ private:
   BernardSensors *sensors;
   rclc_support_t support;
   rcl_node_t node;
-  rcl_timer_t timer;
+  rcl_timer_t timer;        // Fast timer (IMU + feet pressure)
+  rcl_timer_t tempTimer;    // Slow timer (temperature)
   rclc_executor_t executor;
   rcl_allocator_t allocator;
   rcl_publisher_t pubFeetPressure;
   rcl_publisher_t pubImu;
-  rcl_publisher_t pubStatus;
+  rcl_publisher_t pubTemp;
 
   // Status fields
   rcl_ret_t retFeetPressure;
   rcl_ret_t retImu;
-  rcl_ret_t retStatus;
+  rcl_ret_t retTemp;
   rcl_ret_t retTimer;
+  rcl_ret_t retTempTimer;
   rcl_ret_t retNode;
   rcl_ret_t retExecutor;
 
   // Message objects
   std_msgs__msg__UInt16MultiArray msgFeetPressure;
   sensor_msgs__msg__Imu msgImu;
-  std_msgs__msg__UInt8 msgStatus;
+  std_msgs__msg__Int8 msgTemp;
 
   static void timerCallback(rcl_timer_t *timer, int64_t last_call_time);
+  static void tempTimerCallback(rcl_timer_t *timer, int64_t last_call_time);
 };
 
 #endif // _STM32_NODE_HPP
