@@ -44,7 +44,7 @@ IMUStatus_t BernardSensors::initSensors()
 
 IMUStatus_t BernardSensors::initIMU()
 {
-  if (!imu->begin())
+  if (!imu->begin(OPERATION_MODE_NDOF))
   {
     /* There was a problem detecting the BNO055 ... check your connections */
     gui->logMessage("IMU not found!");
@@ -58,8 +58,6 @@ IMUStatus_t BernardSensors::initIMU()
     delay(100);
     /* Use external crystal for better accuracy */
     imu->setExtCrystalUse(true);
-    // imu->setAxisRemap(Adafruit_BNO055::REMAP_CONFIG_P5);
-    // imu->setAxisSign(Adafruit_BNO055::REMAP_SIGN_P5);
 
     return IMU_ONLINE;
   }
